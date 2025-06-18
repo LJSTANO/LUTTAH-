@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mama Luttah Contribution</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e9f0fa;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #2a5d9f;
+    }
+    .progress {
+      background: #cce0f5;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar {
+      background: #2a5d9f;
+      height: 20px;
+      width: 0%;
+      color: white;
+      text-align: center;
+      transition: width 0.5s;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #bdd7ee;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #d6eaf8;
+    }
+    form input[type="text"],
+    form input[type="number"] {
+      padding: 8px;
+      margin: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form input[type="submit"] {
+      padding: 8px 16px;
+      background-color: #2a5d9f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .actions button {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    .actions button.edit {
+      background-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Mama Luttah Contribution</h2>
+    <p><strong>Total Raised:</strong> Ksh <span id="total">0</span> /60,000</p>
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <form id="contributionForm">
+      <div class="form-row">
+        <input type="text" id="name" placeholder="Contributor Name" required />
+        <input type="number" id="amount" placeholder="Amount (Ksh)" required />
+        <input type="submit" value="Add Contribution" />
+      </div>
+    </form>
+
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Amount (Ksh)</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="contributionList"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById("contributionForm");
+    const totalSpan = document.getElementById("total");
+    const list = document.getElementById("contributionList");
+    const progressBar = document.getElementById("progressBar");
+
+    let contributions = JSON.parse(localStorage.getItem("contributions")) || [];
+    const target = 50000;
+
+    function renderContributions() {
+      list.innerHTML = "";
+      let total = 0;
+      contributions.forEach((c, i) => {
+        total += Number(c.amount);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${c.name}</td>
+          <td>${c.amount}</td>
+          <td>${c.date}</td>
+          <td class="actions">
+            <button class="edit" onclick="editContribution(${i})">Edit</button>
+            <button onclick="deleteContribution(${i})">Delete</button>
+          </td>
+        `;
+        list.appendChild(row);
+      });
+      totalSpan.textContent = total;
+      const percent = Math.min((total / target) * 100, 100);
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = Math.floor(percent) + "%";
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const amount = document.getElementById("amount").value;
+      const date = new Date().toLocaleDateString();
+      contributions.push({ name, amount, date });
+      localStorage.setItem("contributions", JSON.stringify(contributions));
+      form.reset();
+      renderContributions();
+    });
+
+    function deleteContribution(index) {
+      if (confirm("Are you sure you want to delete this contribution?")) {
+        contributions.splice(index, 1);
+        localStorage.setItem("contributions", JSON.stringify(contributions));
+        renderContributions();
+      }
+    }
+
+    function editContribution(index) {
+      const entry = contributions[index];
+      const newName = prompt("Edit Name:", entry.name);
+      const newAmount = prompt("Edit Amount:", entry.amount);
+      if (newName && newAmount) {
+        contributions[index].name = newName;
+        contributions[index].amount = Number(newAmount);
+        localStorage.setItem("contributions", JSON.stringify(contributions));
+        renderContributions();
+      }
+    }
+
+    renderContributions();
+  </script>
+</body>
+</html>
